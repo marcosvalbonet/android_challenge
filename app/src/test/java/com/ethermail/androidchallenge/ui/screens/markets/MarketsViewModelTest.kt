@@ -1,39 +1,52 @@
 package com.ethermail.androidchallenge.ui.screens.markets
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.ethermail.androidchallenge.data.model.markets.MarketData
 import com.ethermail.androidchallenge.data.model.markets.MarketsApiData
 import com.ethermail.androidchallenge.domain.usecase.GetMarketsUseCase
 import com.ethermail.androidchallenge.ui.extensions.formatDate
-import com.ethermail.androidchallenge.ui.screens.CoroutinesTestRule
-import io.mockk.MockKAnnotations
 import io.mockk.coEvery
-import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.MockitoAnnotations
 
 @ExperimentalCoroutinesApi
-class MarketsViewModelTest {
+class MarketsViewModelTest2 {
 
     private lateinit var viewModel: MarketViewModel
 
-    @RelaxedMockK
+
     private lateinit var getMarketsUseCase : GetMarketsUseCase
 
     @get:Rule
-    var rule: CoroutinesTestRule = CoroutinesTestRule()
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Before
-    fun onBefore() {
-        MockKAnnotations.init(this)
-        viewModel = MarketViewModel(getMarketsUseCase)
+    fun setup(){
+        MockitoAnnotations.openMocks(this)
+        Dispatchers.setMain(Dispatchers.Unconfined)
 
+        getMarketsUseCase = mockk()
+        viewModel = MarketViewModel(getMarketsUseCase)
+    }
+
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @After
+    fun shutdown(){
+        Dispatchers.resetMain()
     }
 
     @Test
-    fun `retrieveMarkets should update MarketsUiState with success`() = runBlockingTest {
+    fun `retrieveMarkets should update MarketsUiState with success`() = runTest {
         // Given
         val market = MarketData(
             exchangeId = "bibox",
@@ -56,8 +69,9 @@ class MarketsViewModelTest {
 
         coEvery { getMarketsUseCase.invoke() } returns marketsApiData
 
+
         // When
-        viewModel.retrieveMarkets("BTC")
+        viewModel.retrieveMarkets("BSV")
 
         // Then
         assert(viewModel.uiState.value.market.rank == market.rank)
