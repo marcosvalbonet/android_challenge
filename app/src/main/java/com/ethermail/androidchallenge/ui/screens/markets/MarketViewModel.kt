@@ -18,10 +18,6 @@ class MarketViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<MarketUiState> = MutableStateFlow(MarketUiState())
     val uiState: StateFlow<MarketUiState> = _uiState
 
-//    init {
-//        retrieveMarkets("UTC")
-//    }
-
     fun retrieveMarkets(symbol : String){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
